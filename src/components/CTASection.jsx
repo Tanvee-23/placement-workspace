@@ -8,6 +8,9 @@ export default function CTASection() {
     <section className="cta" id="cta">
       <div className="wrap">
         <div className="cta-box reveal">
+          <div className="cta-particles">
+            <span /><span /><span /><span /><span /><span />
+          </div>
           <h2>Your placement prep, finally out of fourteen tabs.</h2>
           <p>
             Score your resume, plan your week, and walk into interviews having already done the

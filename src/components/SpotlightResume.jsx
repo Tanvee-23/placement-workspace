@@ -83,6 +83,8 @@ export default function SpotlightResume({ score }) {
                 fontSize: '12.5px',
                 color: 'var(--muted)',
                 marginBottom: '14px',
+                position: 'relative',
+                zIndex: 2
               }}
             >
               {hasScore ? 'ATS Score · Software Engineer profile' : 'No resume analyzed yet'}

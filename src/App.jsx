@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import InteractiveBackground from './components/InteractiveBackground';
 import LandingPage from './pages/LandingPage';
 import ResumePage from './pages/ResumePage';
 import WorkspacePage from './pages/WorkspacePage';
@@ -36,6 +37,7 @@ function AppContent() {
 
   return (
     <>
+      <InteractiveBackground />
       <Navbar session={session} onLogout={handleLogout} />
       <Routes>
         <Route path="/" element={<LandingPage session={session} />} />

@@ -1,5 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+function AnimatedCounter({ target, suffix = '' }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          const duration = 1200;
+          const startTime = performance.now();
+          const animate = (now) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+}
 
 export default function Hero({ session, score, streak }) {
   const navigate = useNavigate();
@@ -45,15 +76,15 @@ export default function Hero({ session, score, streak }) {
           </div>
           <div className="hero-meta">
             <div>
-              <div className="num mono">12</div>
+              <div className="num mono"><AnimatedCounter target={12} /></div>
               <div className="lbl">Tools in one workspace</div>
             </div>
             <div>
-              <div className="num mono">4</div>
+              <div className="num mono"><AnimatedCounter target={4} /></div>
               <div className="lbl">Stages, start to offer</div>
             </div>
             <div>
-              <div className="num mono">0₹</div>
+              <div className="num mono"><AnimatedCounter target={0} suffix="₹" /></div>
               <div className="lbl">Cost to get started</div>
             </div>
           </div>
