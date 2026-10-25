@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { loadUserData, saveUserData } from '../utils/storage';
+import CompanyQuiz from '../components/CompanyQuiz';
+import CompanyMockInterview from '../components/CompanyMockInterview';
 
 export default function WorkspacePage({ session }) {
   const [userData, setUserData] = useState(null);
   const [selectedKey, setSelectedKey] = useState('');
+  const [view, setView] = useState('details'); // 'details' | 'quiz' | 'interview'
 
   // Add Company Form State
   const [newCoName, setNewCoName] = useState('');
@@ -25,6 +28,11 @@ export default function WorkspacePage({ session }) {
       setSelectedKey(data.companies[0].id);
     }
   }, [session]);
+
+  // Reset view when switching companies
+  useEffect(() => {
+    setView('details');
+  }, [selectedKey]);
 
   if (!session) {
     return (
@@ -295,190 +303,220 @@ export default function WorkspacePage({ session }) {
           </div>
         </div>
 
-        {/* Right Panel: Selected Company details */}
+        {/* Right Panel: Selected Company details / Quiz / Interview */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
           {activeCo ? (
             <>
-              {/* Company Round Breakdown */}
-              <div className="mock" style={{ padding: '32px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '22px' }}>
-                  <span
-                    className="co-tag"
-                    style={{
-                      background: activeCo.color,
-                      color: activeCo.color === 'var(--yellow)' ? '#5a4200' : '#fff',
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '10px',
-                      fontSize: '16px'
-                    }}
-                  >
-                    {activeCo.name.substring(0, 2).toUpperCase()}
-                  </span>
-                  <div>
-                    <h3 style={{ fontSize: '22px', fontWeight: '700' }}>{activeCo.name} Process</h3>
-                    <span className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                      Status: {activeCo.stage}
-                    </span>
-                  </div>
-                </div>
+              {view === 'quiz' && (
+                <CompanyQuiz company={activeCo} onBack={() => setView('details')} />
+              )}
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
-                  {activeCo.rounds.map((round, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '16px', position: 'relative' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <div
-                          onClick={() => handleToggleRoundStatus(idx)}
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            background:
-                              round.status === 'Cleared'
-                                ? 'var(--mint-soft)'
-                                : round.status === 'Pending'
-                                ? 'var(--violet-soft)'
-                                : 'var(--paper-2)',
-                            border: '2px solid',
-                            borderColor:
-                              round.status === 'Cleared'
-                                ? 'var(--mint)'
-                                : round.status === 'Pending'
-                                ? 'var(--violet)'
-                                : 'var(--line)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px',
-                            fontWeight: '700',
-                            color:
-                              round.status === 'Cleared'
-                                ? 'var(--mint)'
-                                : round.status === 'Pending'
-                                ? 'var(--violet-deep)'
-                                : 'var(--muted)',
-                            zIndex: 2,
-                            cursor: 'pointer'
-                          }}
-                          title="Click to toggle status (Pending -> Cleared -> Upcoming)"
-                        >
-                          {round.status === 'Cleared' ? '✓' : idx + 1}
-                        </div>
-                        {idx < activeCo.rounds.length - 1 && (
-                          <div
-                            style={{
-                              width: '2px',
-                              flex: 1,
-                              background: 'var(--line)',
-                              marginTop: '4px',
-                              marginBottom: '4px',
-                              zIndex: 1
-                            }}
-                          ></div>
-                        )}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                          <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{round.name}</h4>
-                          <span
-                            className="mono"
-                            style={{
-                              fontSize: '9.5px',
-                              fontWeight: '700',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              background:
-                                round.status === 'Cleared'
-                                  ? 'var(--mint-soft)'
-                                  : round.status === 'Pending'
-                                  ? 'var(--violet-soft)'
-                                  : 'var(--paper-2)',
-                              color:
-                                round.status === 'Cleared'
-                                  ? 'var(--mint)'
-                                  : round.status === 'Pending'
-                                  ? 'var(--violet-deep)'
-                                  : 'var(--muted)'
-                            }}
-                          >
-                            {round.status.toUpperCase()}
-                          </span>
-                        </div>
-                        <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px', lineHeight: '1.45' }}>
-                          {round.details}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              {view === 'interview' && (
+                <CompanyMockInterview company={activeCo} onBack={() => setView('details')} />
+              )}
 
-                {/* Add Round Form */}
-                <form onSubmit={handleAddRound} style={{ borderTop: '1px solid var(--line)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <h4 style={{ fontSize: '14.5px', fontWeight: '700' }}>Add Interview Round</h4>
-                  <input
-                    type="text"
-                    value={newRoundName}
-                    onChange={(e) => setNewRoundName(e.target.value)}
-                    placeholder="e.g. Technical Round 2, HR Round"
-                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-                  />
-                  <input
-                    type="text"
-                    value={newRoundDetails}
-                    onChange={(e) => setNewRoundDetails(e.target.value)}
-                    placeholder="Topic details / duration..."
-                    style={{ padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-                  />
-                  <button type="submit" className="btn-primary" style={{ padding: '8px', fontSize: '12.5px', justifyContent: 'center' }}>
-                    Add Round
-                  </button>
-                </form>
-              </div>
-
-              {/* Company Mock Interview Questions */}
-              <div className="mock" style={{ padding: '32px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '14px' }}>
-                  Practice Mock Questions ({activeCo.name})
-                </h3>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-                  {activeCo.mocks.map((q, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                        padding: '14px',
-                        background: 'var(--paper)',
-                        borderRadius: '12px',
-                        border: '1px solid var(--line)'
-                      }}
-                    >
-                      <span className="mono" style={{ fontSize: '12.5px', color: 'var(--violet-deep)', fontWeight: '700' }}>
-                        Q{idx + 1}
+              {view === 'details' && (
+                <>
+                  {/* Company Round Breakdown */}
+                  <div className="mock" style={{ padding: '32px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '22px' }}>
+                      <span
+                        className="co-tag"
+                        style={{
+                          background: activeCo.color,
+                          color: activeCo.color === 'var(--yellow)' ? '#5a4200' : '#fff',
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '10px',
+                          fontSize: '16px'
+                        }}
+                      >
+                        {activeCo.name.substring(0, 2).toUpperCase()}
                       </span>
-                      <div style={{ fontSize: '13.5px', fontWeight: '500', lineHeight: '1.45' }}>
-                        {q}
+                      <div>
+                        <h3 style={{ fontSize: '22px', fontWeight: '700' }}>{activeCo.name} Process</h3>
+                        <span className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                          Status: {activeCo.stage}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                {/* Add Mock Question Form */}
-                <form onSubmit={handleAddMockQ} style={{ borderTop: '1px solid var(--line)', paddingTop: '18px', display: 'flex', gap: '10px' }}>
-                  <input
-                    type="text"
-                    value={newMockQ}
-                    onChange={(e) => setNewMockQ(e.target.value)}
-                    placeholder="Add practice question..."
-                    style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-                  />
-                  <button type="submit" className="btn-primary" style={{ padding: '8px 14px', fontSize: '12.5px' }}>
-                    Add
-                  </button>
-                </form>
-              </div>
+                    {/* Start Quiz & Start Mock Interview buttons */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
+                      <button
+                        onClick={() => setView('quiz')}
+                        className="btn-primary"
+                        style={{ flex: 1, padding: '10px', fontSize: '13px', justifyContent: 'center' }}
+                      >
+                        🧠 Start Quiz
+                      </button>
+                      <button
+                        onClick={() => setView('interview')}
+                        className="btn-primary"
+                        style={{ flex: 1, padding: '10px', fontSize: '13px', justifyContent: 'center', background: 'var(--mint)', boxShadow: '0 0 10px rgba(52, 211, 153, 0.3)' }}
+                      >
+                        🎤 Start Mock Interview
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '28px' }}>
+                      {activeCo.rounds.map((round, idx) => (
+                        <div key={idx} style={{ display: 'flex', gap: '16px', position: 'relative' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div
+                              onClick={() => handleToggleRoundStatus(idx)}
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                borderRadius: '50%',
+                                background:
+                                  round.status === 'Cleared'
+                                    ? 'var(--mint-soft)'
+                                    : round.status === 'Pending'
+                                    ? 'var(--violet-soft)'
+                                    : 'var(--paper-2)',
+                                border: '2px solid',
+                                borderColor:
+                                  round.status === 'Cleared'
+                                    ? 'var(--mint)'
+                                    : round.status === 'Pending'
+                                    ? 'var(--violet)'
+                                    : 'var(--line)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                color:
+                                  round.status === 'Cleared'
+                                    ? 'var(--mint)'
+                                    : round.status === 'Pending'
+                                    ? 'var(--violet-deep)'
+                                    : 'var(--muted)',
+                                zIndex: 2,
+                                cursor: 'pointer'
+                              }}
+                              title="Click to toggle status (Pending -> Cleared -> Upcoming)"
+                            >
+                              {round.status === 'Cleared' ? '✓' : idx + 1}
+                            </div>
+                            {idx < activeCo.rounds.length - 1 && (
+                              <div
+                                style={{
+                                  width: '2px',
+                                  flex: 1,
+                                  background: 'var(--line)',
+                                  marginTop: '4px',
+                                  marginBottom: '4px',
+                                  zIndex: 1
+                                }}
+                              ></div>
+                            )}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                              <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{round.name}</h4>
+                              <span
+                                className="mono"
+                                style={{
+                                  fontSize: '9.5px',
+                                  fontWeight: '700',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  background:
+                                    round.status === 'Cleared'
+                                      ? 'var(--mint-soft)'
+                                      : round.status === 'Pending'
+                                      ? 'var(--violet-soft)'
+                                      : 'var(--paper-2)',
+                                  color:
+                                    round.status === 'Cleared'
+                                      ? 'var(--mint)'
+                                      : round.status === 'Pending'
+                                      ? 'var(--violet-deep)'
+                                      : 'var(--muted)'
+                                }}
+                              >
+                                {round.status.toUpperCase()}
+                              </span>
+                            </div>
+                            <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px', lineHeight: '1.45' }}>
+                              {round.details}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Round Form */}
+                    <form onSubmit={handleAddRound} style={{ borderTop: '1px solid var(--line)', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <h4 style={{ fontSize: '14.5px', fontWeight: '700' }}>Add Interview Round</h4>
+                      <input
+                        type="text"
+                        value={newRoundName}
+                        onChange={(e) => setNewRoundName(e.target.value)}
+                        placeholder="e.g. Technical Round 2, HR Round"
+                        style={{ padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
+                      />
+                      <input
+                        type="text"
+                        value={newRoundDetails}
+                        onChange={(e) => setNewRoundDetails(e.target.value)}
+                        placeholder="Topic details / duration..."
+                        style={{ padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
+                      />
+                      <button type="submit" className="btn-primary" style={{ padding: '8px', fontSize: '12.5px', justifyContent: 'center' }}>
+                        Add Round
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Company Mock Interview Questions */}
+                  <div className="mock" style={{ padding: '32px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '14px' }}>
+                      Practice Mock Questions ({activeCo.name})
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                      {activeCo.mocks.map((q, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            padding: '14px',
+                            background: 'var(--paper)',
+                            borderRadius: '12px',
+                            border: '1px solid var(--line)'
+                          }}
+                        >
+                          <span className="mono" style={{ fontSize: '12.5px', color: 'var(--violet-deep)', fontWeight: '700' }}>
+                            Q{idx + 1}
+                          </span>
+                          <div style={{ fontSize: '13.5px', fontWeight: '500', lineHeight: '1.45' }}>
+                            {q}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add Mock Question Form */}
+                    <form onSubmit={handleAddMockQ} style={{ borderTop: '1px solid var(--line)', paddingTop: '18px', display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        value={newMockQ}
+                        onChange={(e) => setNewMockQ(e.target.value)}
+                        placeholder="Add practice question..."
+                        style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1.5px solid var(--line)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
+                      />
+                      <button type="submit" className="btn-primary" style={{ padding: '8px 14px', fontSize: '12.5px' }}>
+                        Add
+                      </button>
+                    </form>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <div className="mock" style={{ padding: '40px 32px', textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
