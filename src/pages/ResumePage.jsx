@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { loadUserData, saveUserData, recordStreakActivity } from '../utils/storage';
-
-const ROLE_SKILLS = {
-  'Frontend Developer': ['javascript', 'typescript', 'react', 'redux', 'next.js', 'html', 'css', 'tailwind', 'webpack', 'git', 'testing'],
-  'Backend Developer': ['node.js', 'express', 'python', 'django', 'java', 'spring', 'go', 'postgresql', 'mongodb', 'redis', 'docker', 'system design', 'sql', 'microservices'],
-  'Fullstack Developer': ['react', 'node.js', 'typescript', 'express', 'postgresql', 'mongodb', 'docker', 'system design', 'javascript', 'html', 'css', 'git'],
-  'Data Scientist': ['python', 'r', 'sql', 'machine learning', 'deep learning', 'pandas', 'numpy', 'scikit-learn', 'pytorch', 'tensorflow', 'tableau', 'spark'],
-  'DevOps Engineer': ['docker', 'kubernetes', 'aws', 'terraform', 'jenkins', 'gitlab', 'linux', 'bash', 'prometheus', 'grafana', 'nginx', 'cicd']
-};
+import { useToast } from '../context/ToastContext';
+import RoleSelect from '../components/ui/RoleSelect';
+import { BUILT_IN_ROLES, resolveRoleSkills, parseSkillList, normalizeRoleName } from '../data/roles';
+import {
+  validateFileBasics,
+  sniffFileKind,
+  validateFileSignature,
+  validateResumeText
+} from '../utils/resumeValidation';
+import { extractTextFromFile } from '../utils/resumeFileReader';
 
 export default function ResumePage({ session }) {
   const [userData, setUserData] = useState(null);
@@ -16,6 +18,10 @@ export default function ResumePage({ session }) {
   const [resumeText, setResumeText] = useState('');
   const [file, setFile] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
+    const toast = useToast();
+  const uploadToken = useRef(0); // makes sure only the latest upload updates the screen
+  const [fieldErrors, setFieldErrors] = useState({ role: '', text: '' });
+  const [skillsInput, setSkillsInput] = useState('');
 
   // Drag and drop states
   const [isDragging, setIsDragging] = useState(false);
@@ -29,6 +35,8 @@ export default function ResumePage({ session }) {
     setUserData(data);
     if (data.resumeData) {
       setTargetRole(data.resumeData.targetRole || '');
+            const savedCustom = (data.customRoles || []).find((r) => r.name === data.resumeData.targetRole);
+      setSkillsInput(savedCustom ? savedCustom.skills.join(', ') : '');
       setResumeText(data.resumeData.parsedText || '');
       if (data.resumeData.fileName) {
         setFile({ name: data.resumeData.fileName });
@@ -54,82 +62,165 @@ export default function ResumePage({ session }) {
     );
   }
 
-  const generateMockResumeText = (fileName, role) => {
-    const nameBase = fileName.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
-    const name = nameBase.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'John Doe';
-    const roleSkills = ROLE_SKILLS[role] || ['programming'];
-    const skillsToInclude = roleSkills.slice(0, Math.ceil(roleSkills.length * 0.7));
+//   const generateMockResumeText = (fileName, role) => {
+//     const nameBase = fileName.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+//     const name = nameBase.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'John Doe';
+//     const roleSkills = ROLE_SKILLS[role] || ['programming'];
+//     const skillsToInclude = roleSkills.slice(0, Math.ceil(roleSkills.length * 0.7));
     
-    return `
-${name.toUpperCase()}
-Email: ${name.toLowerCase().replace(/\s+/g, '')}@university.edu | Phone: +91 98765 43210
-LinkedIn: linkedin.com/in/${name.toLowerCase().replace(/\s+/g, '')} | GitHub: github.com/${name.toLowerCase().replace(/\s+/g, '')}
+//     return `
+// ${name.toUpperCase()}
+// Email: ${name.toLowerCase().replace(/\s+/g, '')}@university.edu | Phone: +91 98765 43210
+// LinkedIn: linkedin.com/in/${name.toLowerCase().replace(/\s+/g, '')} | GitHub: github.com/${name.toLowerCase().replace(/\s+/g, '')}
 
-PROFESSIONAL SUMMARY
-Dedicated and results-driven aspiring ${role} with strong foundations in software development. Experienced in building scalable applications, optimization, and working in agile teams. Proven track record of delivering clean and efficient code.
+// PROFESSIONAL SUMMARY
+// Dedicated and results-driven aspiring ${role} with strong foundations in software development. Experienced in building scalable applications, optimization, and working in agile teams. Proven track record of delivering clean and efficient code.
 
-EDUCATION
-Bachelor of Technology in Computer Science & Engineering
-GPA: 8.9/10
+// EDUCATION
+// Bachelor of Technology in Computer Science & Engineering
+// GPA: 8.9/10
 
-WORK EXPERIENCE
-Software Engineer Intern | Tech Solutions
-- Responsible for assisting with codebase improvements and database optimizations.
-- Collaborated on front-facing feature modules using ${skillsToInclude.slice(0, 2).join(', ')}.
-- Worked on improving response latency and refactoring legacy scripts.
+// WORK EXPERIENCE
+// Software Engineer Intern | Tech Solutions
+// - Responsible for assisting with codebase improvements and database optimizations.
+// - Collaborated on front-facing feature modules using ${skillsToInclude.slice(0, 2).join(', ')}.
+// - Worked on improving response latency and refactoring legacy scripts.
 
-PROJECTS
-E-Commerce Platform & Analytics Dashboard
-- Engineered an end-to-end full-stack web application.
-- Implemented state management, user authentication, and data visualization.
-- Optimized page load speed by 35% and reduced bundle size by 15%.
+// PROJECTS
+// E-Commerce Platform & Analytics Dashboard
+// - Engineered an end-to-end full-stack web application.
+// - Implemented state management, user authentication, and data visualization.
+// - Optimized page load speed by 35% and reduced bundle size by 15%.
 
-SKILLS
-Core Competencies: ${skillsToInclude.join(', ')}
-Tools & Platforms: Git, VS Code, Linux
+// SKILLS
+// Core Competencies: ${skillsToInclude.join(', ')}
+// Tools & Platforms: Git, VS Code, Linux
 
-CERTIFICATIONS
-Advanced Software Development, AWS Certified Cloud Practitioner
-    `;
+// CERTIFICATIONS
+// Advanced Software Development, AWS Certified Cloud Practitioner
+//     `;
+//   };
+
+  // const handleFile = (uploadedFile) => {
+  //   setUploadError('');
+  //   setUploadStatus('idle');
+    
+  //   if (!uploadedFile) return;
+
+  //   const allowedExtensions = ['pdf', 'doc', 'docx', 'txt'];
+  //   const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+    
+  //   if (!allowedExtensions.includes(fileExtension)) {
+  //     setUploadError(`Unsupported file type (.${fileExtension}). Please upload a PDF, DOC, DOCX, or TXT file.`);
+  //     setUploadStatus('error');
+  //     setFile(null);
+  //     return;
+  //   }
+
+  //   setFile(uploadedFile);
+  //   setUploadStatus('loading');
+
+  //   if (fileExtension === 'txt') {
+  //     const reader = new FileReader();
+  //     reader.onload = (event) => {
+  //       setResumeText(event.target.result || '');
+  //       setUploadStatus('success');
+  //     };
+  //     reader.onerror = () => {
+  //       setUploadError('Failed to read TXT file content.');
+  //       setUploadStatus('error');
+  //     };
+  //     reader.readAsText(uploadedFile);
+  //   } else {
+  //     // Simulate text extraction for PDF/Word files
+  //     setTimeout(() => {
+  //       const mockText = generateMockResumeText(uploadedFile.name, targetRole || 'Frontend Developer');
+  //       setResumeText(mockText);
+  //       setUploadStatus('success');
+  //     }, 1000);
+  //   }
+  // };
+
+
+    const customRoles = userData?.customRoles || [];
+  const selectedCustomRole = customRoles.find((r) => r.name === targetRole);
+
+  const persistCustomRoles = (nextRoles) => {
+    const updated = { ...userData, customRoles: nextRoles };
+    setUserData(updated);
+    saveUserData(session.email, updated);
   };
 
-  const handleFile = (uploadedFile) => {
+  const handleRoleChange = (role) => {
+    setTargetRole(role);
+    setFieldErrors((prev) => ({ ...prev, role: '' }));
+    const custom = customRoles.find((r) => r.name === role);
+    setSkillsInput(custom ? custom.skills.join(', ') : '');
+  };
+
+  const handleAddCustomRole = (rawName) => {
+    const name = normalizeRoleName(rawName);
+    const existing = customRoles.find((r) => r.name.toLowerCase() === name.toLowerCase());
+    if (!existing) {
+      persistCustomRoles([...customRoles, { name, skills: [] }]);
+      toast.success(`Added custom role “${name}”.`);
+    }
+    handleRoleChange(existing ? existing.name : name);
+  };
+
+  const handleRemoveCustomRole = (name) => {
+    persistCustomRoles(customRoles.filter((r) => r.name !== name));
+    if (targetRole === name) handleRoleChange('');
+    toast.info(`Removed custom role “${name}”.`);
+  };
+
+  const handleSkillsChange = (raw) => {
+    setSkillsInput(raw);
+    if (!selectedCustomRole) return;
+    persistCustomRoles(
+      customRoles.map((r) => (r.name === selectedCustomRole.name ? { ...r, skills: parseSkillList(raw) } : r))
+    );
+  };
+
+  const handleFile = async (uploadedFile) => {
     setUploadError('');
     setUploadStatus('idle');
-    
     if (!uploadedFile) return;
 
-    const allowedExtensions = ['pdf', 'doc', 'docx', 'txt'];
-    const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
-    
-    if (!allowedExtensions.includes(fileExtension)) {
-      setUploadError(`Unsupported file type (.${fileExtension}). Please upload a PDF, DOC, DOCX, or TXT file.`);
+    const token = ++uploadToken.current;
+    const fail = (message) => {
+      if (token !== uploadToken.current) return;
+      setUploadError(message);
       setUploadStatus('error');
       setFile(null);
-      return;
-    }
+      toast.error(message, 6000);
+    };
+
+    // Layer 1: extension / size / empty
+    const basics = validateFileBasics(uploadedFile);
+    if (!basics.ok) return fail(basics.message);
 
     setFile(uploadedFile);
     setUploadStatus('loading');
 
-    if (fileExtension === 'txt') {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setResumeText(event.target.result || '');
-        setUploadStatus('success');
-      };
-      reader.onerror = () => {
-        setUploadError('Failed to read TXT file content.');
-        setUploadStatus('error');
-      };
-      reader.readAsText(uploadedFile);
-    } else {
-      // Simulate text extraction for PDF/Word files
-      setTimeout(() => {
-        const mockText = generateMockResumeText(uploadedFile.name, targetRole || 'Frontend Developer');
-        setResumeText(mockText);
-        setUploadStatus('success');
-      }, 1000);
+    try {
+      // Layer 2: file signature must match the extension (catches renamed photos)
+      const kind = await sniffFileKind(uploadedFile);
+      const signature = validateFileSignature(basics.ext, kind);
+      if (!signature.ok) return fail(signature.message);
+
+      // Read the real text, then Layer 3: does it look like a resume?
+      const text = await extractTextFromFile(uploadedFile, basics.ext);
+      const content = validateResumeText(text);
+      if (!content.valid) return fail(content.message);
+
+      if (token !== uploadToken.current) return;
+      setResumeText(text);
+      setFieldErrors((prev) => ({ ...prev, text: '' }));
+      setUploadStatus('success');
+      toast.success('Resume uploaded and verified.');
+    } catch (err) {
+      fail(err.message || 'This file could not be read. Please upload a valid resume.');
     }
   };
 
@@ -152,12 +243,17 @@ Advanced Software Development, AWS Certified Cloud Practitioner
   };
 
   const handleAnalyze = () => {
-    if (!targetRole) {
-      alert('Please select a target role first.');
-      return;
-    }
+        const errors = { role: '', text: '' };
+    if (!targetRole) errors.role = 'Please select or add a target role first.';
     if (!resumeText.trim()) {
-      alert('Please upload a resume file or paste your resume text in the text area.');
+      errors.text = 'Please upload a resume file or paste your resume text.';
+    } else {
+      const check = validateResumeText(resumeText);
+      if (!check.valid) errors.text = check.message;
+    }
+    setFieldErrors(errors);
+    if (errors.role || errors.text) {
+      toast.error(errors.role || errors.text, 6000);
       return;
     }
 
@@ -165,6 +261,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
 
     setTimeout(() => {
       const report = runRuleBasedAnalysis(resumeText, targetRole);
+            toast.success('Analysis complete.');
       
       // Update streak for qualifying activity
       recordStreakActivity(session.email);
@@ -205,6 +302,8 @@ Advanced Software Development, AWS Certified Cloud Practitioner
     setFile(null);
     setUploadStatus('idle');
     setUploadError('');
+        setFieldErrors({ role: '', text: '' });
+    setSkillsInput('');
   };
 
 
@@ -278,7 +377,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
     }
 
     // 5. SKILLS ANALYSIS
-    const roleSkills = ROLE_SKILLS[role] || [];
+        const roleSkills = resolveRoleSkills(role, customRoles);
     const existingSkills = [];
     const missingSkills = [];
 
@@ -441,30 +540,39 @@ Advanced Software Development, AWS Certified Cloud Practitioner
               <label className="mono" style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
                 TARGET ROLE *
               </label>
-              <select
+                            <RoleSelect
                 value={targetRole}
-                onChange={(e) => setTargetRole(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '11px 14px',
-                  borderRadius: '10px',
-                  border: '1.5px solid var(--line)',
-                  fontSize: '13.5px',
-                  outline: 'none',
-                  background: '#fff',
-                  fontFamily: 'inherit'
-                }}
-              >
-                <option value="">Select a Target Role...</option>
-                {Object.keys(ROLE_SKILLS).map((role) => (
-                  <option key={role} value={role}>{role}</option>
-                ))}
-              </select>
+                builtInRoles={BUILT_IN_ROLES}
+                customRoles={customRoles}
+                onChange={handleRoleChange}
+                onAddCustom={handleAddCustomRole}
+                onRemoveCustom={handleRemoveCustomRole}
+                error={fieldErrors.role}
+              />
+              {fieldErrors.role && (
+                <p style={{ color: 'var(--coral)', fontSize: '12.5px', marginTop: '8px' }}>⚠️ {fieldErrors.role}</p>
+              )}
+              {selectedCustomRole && (
+                <div style={{ marginTop: '12px' }}>
+                  <label className="mono" style={{ fontSize: '10.5px', color: 'var(--muted)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                    KEY SKILLS FOR THIS ROLE (OPTIONAL, COMMA SEPARATED)
+                  </label>
+                  <input
+                    value={skillsInput}
+                    onChange={(e) => handleSkillsChange(e.target.value)}
+                    placeholder="e.g. unity, c#, game physics"
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid var(--line)', background: 'var(--paper-2)', color: 'var(--ink)', fontSize: '13px', fontFamily: 'inherit', outline: 'none' }}
+                  />
+                  <p style={{ color: 'var(--muted)', fontSize: '11.5px', marginTop: '6px' }}>
+                    We scan your resume for these. Leave blank and we pick common skills for this kind of role.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
               <label className="mono" style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
-                UPLOAD RESUME (SUPPORTED: PDF, DOC, DOCX, TXT)
+                UPLOAD RESUME (PDF, DOCX, TXT)
               </label>
               <div 
                 onDragOver={handleDragOver}
@@ -488,8 +596,8 @@ Advanced Software Development, AWS Certified Cloud Practitioner
               >
                 <input 
                   type="file" 
-                  accept=".pdf,.doc,.docx,.txt" 
-                  onChange={(e) => handleFile(e.target.files[0])} 
+                  accept=".pdf,.docx,.txt"
+                  onChange={(e) => { handleFile(e.target.files[0]); e.target.value = ''; }} 
                   style={{
                     position: 'absolute',
                     top: 0,
@@ -509,7 +617,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
                     </strong>
                     {uploadStatus === 'loading' && (
                       <span style={{ fontSize: '12px', color: 'var(--violet)', fontWeight: '600', display: 'block', marginTop: '6px' }}>
-                        ⏳ Extracting text content...
+                        ⏳ Reading and verifying your resume...
                       </span>
                     )}
                     {uploadStatus === 'success' && (
@@ -525,7 +633,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
                       Drag &amp; drop here, or <span style={{ color: 'var(--violet)', textDecoration: 'underline' }}>Browse</span>
                     </span>
                     <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginTop: '4px' }}>
-                      PDF, DOC, DOCX, TXT files
+                      PDF, DOCX, TXT files (max 5 MB)
                     </span>
                   </div>
                 )}
@@ -550,7 +658,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
             <label className="mono" style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
               PASTE RESUME CONTENT OR DRAG FILE ABOVE *
             </label>
-            <textarea
+            {/* <textarea
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
               placeholder="Paste your raw resume text here to run an ATS scan (recommended for PDF/Word text content copies)..."
@@ -566,7 +674,29 @@ Advanced Software Development, AWS Certified Cloud Practitioner
                 outline: 'none',
                 background: '#fff'
               }}
-            />
+            /> */}
+
+            <textarea
+  value={resumeText}
+  onChange={(e) => { setResumeText(e.target.value); if (fieldErrors.text) setFieldErrors((p) => ({ ...p, text: '' })); }}
+  placeholder="Paste your raw resume text here to run an ATS scan (recommended for PDF/Word text content copies)..."
+  style={{
+    width: '100%',
+    height: '140px',
+    padding: '12px',
+    borderRadius: '10px',
+    border: `1.5px solid ${fieldErrors.text ? 'var(--coral)' : 'var(--line)'}`,
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    resize: 'vertical',
+    outline: 'none',
+    background: 'var(--paper-2)',
+    color: 'var(--ink)'
+  }}
+/>
+{fieldErrors.text && (
+  <p style={{ color: 'var(--coral)', fontSize: '12.5px', marginTop: '8px' }}>⚠️ {fieldErrors.text}</p>
+)}
           </div>
 
           <div style={{ display: 'flex', gap: '12px' }}>
@@ -586,7 +716,7 @@ Advanced Software Development, AWS Certified Cloud Practitioner
               )}
             </button>
             {(resumeText || file) && (
-              <button onClick={handleReset} className="btn-ghost" style={{ background: '#fff' }}>
+              <button onClick={handleReset} className="btn-ghost">
                 Reset
               </button>
             )}

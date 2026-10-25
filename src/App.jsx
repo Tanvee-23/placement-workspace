@@ -11,6 +11,7 @@ import ExecutePage from './pages/ExecutePage';
 import AuthPage from './pages/AuthPage';
 import ScrollToTop from './components/ScrollToTop';
 import useScrollReveal from './hooks/useScrollReveal';
+import { ToastProvider } from './context/ToastContext';
 
 function AppContent() {
   const [session, setSession] = useState(null);
@@ -55,8 +56,10 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <ScrollToTop />
-      <AppContent />
+      <ToastProvider>
+        <ScrollToTop />
+        <AppContent />
+      </ToastProvider>
     </Router>
   );
 }

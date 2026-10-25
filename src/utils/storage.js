@@ -23,6 +23,7 @@ export function getEmptyUserData() {
       APT: []
     },
     calendarEvents: [],
+    customRoles: [], // roles the user added on the Resume page: [{ name, skills }]
     streaks: {
       count: 0,
       lastCheckIn: null,
