@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { loadUserData, saveUserData, recordStreakActivity } from '../utils/storage';
+import PlanningChatbot from '../components/PlanningChatbot';
 
 const ROADMAP_TEMPLATES = {
   DSA: [
@@ -49,6 +50,7 @@ export default function PlanningPage({ session }) {
             Go to Sign In
           </Link>
         </div>
+        <PlanningChatbot session={session} />
       </div>
     );
   }
@@ -454,6 +456,7 @@ export default function PlanningPage({ session }) {
           </div>
         </div>
       </div>
+      <PlanningChatbot session={session} />
     </div>
   );
 }
