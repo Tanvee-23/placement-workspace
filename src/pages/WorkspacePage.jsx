@@ -195,7 +195,7 @@ export default function WorkspacePage({ session }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
           
           {/* Target List */}
-          <div className="mock" style={{ padding: '24px' }}>
+          <div id="target-dashboard-card" className="mock" style={{ padding: '24px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '16px' }}>Target Dashboard</h3>
             {companiesList.length === 0 ? (
               <div style={{ color: 'var(--muted)', fontSize: '13.5px', padding: '10px 0', textAlign: 'center' }}>
@@ -318,7 +318,7 @@ export default function WorkspacePage({ session }) {
               {view === 'details' && (
                 <>
                   {/* Company Round Breakdown */}
-                  <div className="mock" style={{ padding: '32px' }}>
+                  <div id="company-process-card" className="mock" style={{ padding: '32px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '22px' }}>
                       <span
                         className="co-tag"
@@ -472,7 +472,7 @@ export default function WorkspacePage({ session }) {
                   </div>
 
                   {/* Company Mock Interview Questions */}
-                  <div className="mock" style={{ padding: '32px' }}>
+                  <div id="mock-interview-card" className="mock" style={{ padding: '32px' }}>
                     <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '14px' }}>
                       Practice Mock Questions ({activeCo.name})
                     </h3>

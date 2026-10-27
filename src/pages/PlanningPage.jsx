@@ -182,7 +182,7 @@ export default function PlanningPage({ session }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
           
           {/* Roadmaps selector */}
-          <div className="mock" style={{ padding: '28px' }}>
+          <div id="prep-roadmaps-card" className="mock" style={{ padding: '28px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Preparation Roadmaps</h3>
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -283,7 +283,7 @@ export default function PlanningPage({ session }) {
           </div>
 
           {/* Calendar visual */}
-          <div className="mock" style={{ padding: '28px' }}>
+          <div id="calendar-schedule-card" className="mock" style={{ padding: '28px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '14px' }}>Calendar &amp; Events</h3>
             
             {/* Add Event Form */}
@@ -345,7 +345,7 @@ export default function PlanningPage({ session }) {
 
         {/* Right: Daily Planner */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          <div className="mock" style={{ padding: '32px' }}>
+          <div id="daily-planner-card" className="mock" style={{ padding: '32px' }}>
             <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '14px' }}>Daily Study Planner</h3>
             
             {/* Add Task Form */}

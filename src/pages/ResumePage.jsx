@@ -532,11 +532,11 @@ export default function ResumePage({ session }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         {/* Upload Interface Block */}
-        <div className="mock" style={{ padding: '32px' }}>
+        <div id="analyze-resume-card" className="mock" style={{ padding: '32px' }}>
           <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '14px' }}>Analyze New Resume</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '22px' }}>
-            <div>
+            <div id="role-skills-card">
               <label className="mono" style={{ fontSize: '11px', color: 'var(--muted)', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
                 TARGET ROLE *
               </label>
@@ -575,6 +575,7 @@ export default function ResumePage({ session }) {
                 UPLOAD RESUME (PDF, DOCX, TXT)
               </label>
               <div 
+                id="resume-upload-card"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -729,7 +730,7 @@ export default function ResumePage({ session }) {
             
             {/* Score Box & Overall Assessment */}
             <div style={{ display: 'grid', gridTemplateColumns: '0.65fr 1.35fr', gap: '28px' }}>
-              <div className="mock" style={{ padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <div id="resume-score-card" className="mock" style={{ padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                 <h4 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>ATS Score</h4>
                 <div 
                   className="score-ring" 
@@ -845,7 +846,7 @@ export default function ResumePage({ session }) {
             )}
 
             {/* Skills Analysis */}
-            <div className="mock" style={{ padding: '32px' }}>
+            <div id="skills-analysis-card" className="mock" style={{ padding: '32px' }}>
               <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Skills &amp; Keywords Analysis</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', fontSize: '13.5px' }}>
                 <div style={{ padding: '16px', background: 'var(--paper)', borderRadius: '12px', border: '1px solid var(--line)' }}>
@@ -907,7 +908,7 @@ export default function ResumePage({ session }) {
 
             {/* Personalized Learning Recommendations */}
             {report.learningPath.length > 0 && (
-              <div className="mock" style={{ padding: '32px' }}>
+              <div id="learning-path-card" className="mock" style={{ padding: '32px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '20px' }}>Personalized Learning Path</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                   {report.learningPath.map((item, idx) => (

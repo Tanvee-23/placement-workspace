@@ -125,7 +125,7 @@ export default function ExecutePage({ session }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
           
           {/* Notes Workspace */}
-          <div className="mock" style={{ padding: '28px' }}>
+          <div id="notes-workspace-card" className="mock" style={{ padding: '28px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '14px' }}>Notion-Style Notes</h3>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
               <button
@@ -200,7 +200,7 @@ export default function ExecutePage({ session }) {
           </div>
 
           {/* Daily Streak & Achievement System */}
-          <div className="mock" style={{ padding: '28px' }}>
+          <div id="streak-system-card" className="mock" style={{ padding: '28px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '700' }}>Consistency Track</h3>
               <button
@@ -293,7 +293,7 @@ export default function ExecutePage({ session }) {
 
         {/* Right: Dynamic Todo Task Manager */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          <div className="mock" style={{ padding: '32px' }}>
+          <div id="task-manager-card" className="mock" style={{ padding: '32px' }}>
             <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '6px' }}>Task Manager</h3>
             <p style={{ color: 'var(--muted)', fontSize: '14.5px', marginBottom: '20px', lineHeight: '1.45' }}>
               Quickly create, check off, or delete daily preparation to-dos.

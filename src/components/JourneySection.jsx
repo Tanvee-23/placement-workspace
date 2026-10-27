@@ -1,9 +1,18 @@
 import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { triggerRoadmapHighlight } from '../hooks/useRoadmapHighlight';
 
 export default function JourneySection() {
   const progPathRef = useRef(null);
   const wrapRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleBoxClick = (path, targetId) => {
+    navigate(`${path}#${targetId}`, {
+      state: { highlightTarget: targetId, triggerTime: Date.now() }
+    });
+    triggerRoadmapHighlight(targetId);
+  };
 
   useEffect(() => {
     const progPath = progPathRef.current;
@@ -85,7 +94,19 @@ export default function JourneySection() {
             </Link>
             
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/resume', 'analyze-resume-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/resume', 'analyze-resume-card');
+                  }
+                }}
+                aria-label="Navigate to Resume Analyzer in Resume Dashboard"
+              >
                 <div className="node-icon" style={{ background: 'var(--violet-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -113,7 +134,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/resume', 'resume-upload-score')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/resume', 'resume-upload-score');
+                  }
+                }}
+                aria-label="Navigate to Resume Upload and Score in Resume Dashboard"
+              >
                 <div className="node-icon" style={{ background: 'var(--violet-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -142,7 +175,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/resume', 'skill-recommendation')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/resume', 'skill-recommendation');
+                  }
+                }}
+                aria-label="Navigate to Skill Recommendation in Resume Dashboard"
+              >
                 <div className="node-icon" style={{ background: 'var(--violet-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="8" r="3" stroke="var(--violet-deep)" strokeWidth="1.8" />
@@ -181,7 +226,19 @@ export default function JourneySection() {
             </Link>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/workspace', 'target-dashboard-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/workspace', 'target-dashboard-card');
+                  }
+                }}
+                aria-label="Navigate to Company-wise Preparation Dashboard in Company Hub"
+              >
                 <div className="node-icon" style={{ background: 'var(--coral-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -204,7 +261,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/workspace', 'company-process-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/workspace', 'company-process-card');
+                  }
+                }}
+                aria-label="Navigate to Company Information and Interview Process in Company Hub"
+              >
                 <div className="node-icon" style={{ background: 'var(--coral-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -233,7 +302,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/workspace', 'mock-interview-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/workspace', 'mock-interview-card');
+                  }
+                }}
+                aria-label="Navigate to Mock Interview in Company Hub"
+              >
                 <div className="node-icon" style={{ background: 'var(--coral-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <rect
@@ -277,7 +358,19 @@ export default function JourneySection() {
             </Link>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/planning', 'prep-roadmaps-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/planning', 'prep-roadmaps-card');
+                  }
+                }}
+                aria-label="Navigate to Topic-wise Preparation Roadmaps in Planner"
+              >
                 <div className="node-icon" style={{ background: 'var(--mint-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -301,7 +394,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/planning', 'daily-planner-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/planning', 'daily-planner-card');
+                  }
+                }}
+                aria-label="Navigate to Daily Study Planner in Planner"
+              >
                 <div className="node-icon" style={{ background: 'var(--mint-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="9" stroke="var(--mint)" strokeWidth="1.8" />
@@ -325,7 +430,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/planning', 'calendar-schedule-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/planning', 'calendar-schedule-card');
+                  }
+                }}
+                aria-label="Navigate to Calendar and Schedule Management in Planner"
+              >
                 <div className="node-icon" style={{ background: 'var(--mint-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <rect
@@ -367,7 +484,19 @@ export default function JourneySection() {
             </Link>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/execute', 'task-manager-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/execute', 'task-manager-card');
+                  }
+                }}
+                aria-label="Navigate to Task Manager in Workspace"
+              >
                 <div className="node-icon" style={{ background: 'var(--yellow-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <rect
@@ -398,7 +527,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/execute', 'notes-workspace-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/execute', 'notes-workspace-card');
+                  }
+                }}
+                aria-label="Navigate to Notes Workspace in Workspace"
+              >
                 <div className="node-icon" style={{ background: 'var(--yellow-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path
@@ -420,7 +561,19 @@ export default function JourneySection() {
             </div>
 
             <div className="node-row reveal">
-              <div className="node-card">
+              <div
+                className="node-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleBoxClick('/execute', 'streak-system-card')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick('/execute', 'streak-system-card');
+                  }
+                }}
+                aria-label="Navigate to Daily Streak and Achievement System in Workspace"
+              >
                 <div className="node-icon" style={{ background: 'var(--yellow-soft)' }}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path

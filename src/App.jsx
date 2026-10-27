@@ -11,6 +11,7 @@ import ExecutePage from './pages/ExecutePage';
 import AuthPage from './pages/AuthPage';
 import ScrollToTop from './components/ScrollToTop';
 import useScrollReveal from './hooks/useScrollReveal';
+import useRoadmapHighlight from './hooks/useRoadmapHighlight';
 import { ToastProvider } from './context/ToastContext';
 
 function AppContent() {
@@ -35,6 +36,9 @@ function AppContent() {
 
   // Activate scroll-reveal animations on route changes
   useScrollReveal();
+
+  // Listen for roadmap navigation highlights
+  useRoadmapHighlight();
 
   return (
     <>
